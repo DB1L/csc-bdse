@@ -1,5 +1,8 @@
 package ru.csc.bdse.app.v11;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import ru.csc.bdse.app.Record;
 
 import java.util.*;
@@ -9,32 +12,46 @@ public class RecordV11 implements Record {
     private final String nickName;
     private final String firstName;
     private final String lastName;
-    private final List<String> phone;
+    private final List<String> phones;
 
-    public RecordV11(String nickName, String firstName, String lastName, List<String> phones) {
+    @JsonCreator
+    public RecordV11(@JsonProperty(value = "nickName", required = true) String nickName,
+                     @JsonProperty(value = "firstName", required = true) String firstName,
+                     @JsonProperty(value = "lastName", required = true) String lastName,
+                     @JsonProperty(value = "phones", required = true) List<String> phones) {
         this.nickName = nickName;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.phone = new ArrayList<>(phones);
+        this.phones = new ArrayList<>(phones);
     }
 
+    @JsonProperty
     public String nickName() {
         return nickName;
     }
 
+    @JsonProperty
     public String firstName() {
         return firstName;
     }
 
+    @JsonProperty
     public String lastName() {
         return lastName;
     }
 
+    @JsonIgnore
     public Stream<String> phones() {
-        return phone.stream();
+        return phones.stream();
+    }
+
+    @JsonProperty("phones")
+    public List<String> phonesList() {
+        return phones;
     }
 
     @Override
+    @JsonIgnore
     public Set<Character> literals() {
         final Set<Character> result = new HashSet<>();
         lastName.chars().mapToObj(c -> (char) c).findFirst().ifPresent(result::add);
@@ -50,12 +67,12 @@ public class RecordV11 implements Record {
         return Objects.equals(nickName, recordV11.nickName) &&
                 Objects.equals(firstName, recordV11.firstName) &&
                 Objects.equals(lastName, recordV11.lastName) &&
-                Objects.equals(phone, recordV11.phone);
+                Objects.equals(phones, recordV11.phones);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nickName, firstName, lastName, phone);
+        return Objects.hash(nickName, firstName, lastName, phones);
     }
 
     @Override
@@ -64,7 +81,7 @@ public class RecordV11 implements Record {
                 "nickName='" + nickName + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", phone=" + phone +
+                ", phones=" + phones +
                 '}';
     }
 }

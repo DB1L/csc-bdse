@@ -1,6 +1,9 @@
 package ru.csc.bdse.app.v1;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import ru.csc.bdse.app.PhoneBookApi;
 import ru.csc.bdse.app.v1.proto.RecordV1OuterClass;
 import ru.csc.bdse.kv.KeyValueApi;
@@ -11,6 +14,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@RestController
+@ConditionalOnProperty(name = "phone.version", havingValue = "1.0")
 public class PhoneBookApiV1 implements PhoneBookApi<RecordV1> {
     private final KeyValueApi kv;
 
@@ -19,23 +24,32 @@ public class PhoneBookApiV1 implements PhoneBookApi<RecordV1> {
     }
 
     @Override
-    public void put(RecordV1 record) {
+    @RequestMapping(method = RequestMethod.POST, value = "/records")
+    public void put(@RequestBody RecordV1 record) {
         kv.put(key(record), encode(record));
     }
 
     @Override
-    public void delete(RecordV1 record) {
+    @RequestMapping(method = RequestMethod.POST, value = "/records/delete")
+    public void delete(@RequestBody RecordV1 record) {
         kv.delete(key(record));
     }
 
     @Override
-    public Set<RecordV1> get(char literal) {
+    @RequestMapping(method = RequestMethod.GET, value = "/records/{literal}")
+    public Set<RecordV1> get(@PathVariable("literal") char literal) {
         // Entry can disappear in the middle of operation
         final Stream<Optional<RecordV1>> optionalStream = kv.getKeys(Character.toString(literal)).stream()
                 .map(this::get);
         final Stream<RecordV1> flattenedStream = optionalStream
                 .flatMap(opt -> opt.map(Stream::of).orElse(Stream.empty()));
         return flattenedStream.collect(Collectors.toSet());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handle(IllegalArgumentException e) {
+        return Optional.ofNullable(e.getMessage()).orElse("");
     }
 
     private Optional<RecordV1> get(String lastName) {

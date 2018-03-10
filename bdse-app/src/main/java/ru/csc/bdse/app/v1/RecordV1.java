@@ -1,5 +1,8 @@
 package ru.csc.bdse.app.v1;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import ru.csc.bdse.app.Record;
 
 import java.util.Collections;
@@ -11,25 +14,32 @@ public class RecordV1 implements Record {
     private final String lastName;
     private final String phone;
 
-    public RecordV1(String firstName, String lastName, String phone) {
+    @JsonCreator
+    public RecordV1(@JsonProperty(value = "firstName", required = true) String firstName,
+                    @JsonProperty(value = "lastName", required = true) String lastName,
+                    @JsonProperty(value = "phone", required = true) String phone) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
     }
 
+    @JsonProperty
     public String firstName() {
         return firstName;
     }
 
+    @JsonProperty
     public String lastName() {
         return lastName;
     }
 
+    @JsonProperty
     public String phone() {
         return phone;
     }
 
     @Override
+    @JsonIgnore
     public Set<Character> literals() {
         return lastName.chars().mapToObj(c -> (char) c).findFirst()
                 .map(Collections::singleton)
