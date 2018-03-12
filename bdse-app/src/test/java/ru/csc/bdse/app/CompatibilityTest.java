@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CompatibilityTest {
+    // TODO: 12.03.18 implement integration tests based on this class
     private PhoneBookApi<RecordV1> apiV1;
     private PhoneBookApi<RecordV11> apiV11;
 

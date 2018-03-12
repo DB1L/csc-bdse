@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class PhoneBookApiTest<R extends Record> {
+    // TODO: 12.03.18 implement integration tests based on this class
     protected abstract Supplier<R> generator();
 
     protected abstract PhoneBookApi<R> newApi();

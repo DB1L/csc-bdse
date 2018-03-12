@@ -19,6 +19,7 @@ public class Application {
 
     @Bean
     KeyValueApi node() {
+        // TODO: 12.03.18 get host from env and create client
         return new InMemoryKeyValueApi("a");
     }
 }

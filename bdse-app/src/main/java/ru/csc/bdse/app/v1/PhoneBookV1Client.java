@@ -11,6 +11,7 @@ public class PhoneBookV1Client implements PhoneBookApi<RecordV1> {
     private final String baseUrl;
     private final RestTemplate rest = new RestTemplate();
 
+    // TODO: 12.03.18 add error messages 
     public PhoneBookV1Client(String baseUrl) {
         this.baseUrl = baseUrl;
     }
