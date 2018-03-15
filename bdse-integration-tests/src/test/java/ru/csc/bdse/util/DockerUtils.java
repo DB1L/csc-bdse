@@ -24,6 +24,22 @@ public class DockerUtils {
                 .withStartupTimeout(Duration.of(STARTUP_TIMEOUT_SEC, SECONDS));
     }
 
+    public static GenericContainer nodeInMemory(Network network, String nodeAlias, int port) {
+        return new GenericContainer(
+                new ImageFromDockerfile()
+                        .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
+                                ("../bdse-kvnode/target/bdse-kvnode-0.0.1-SNAPSHOT-boot.jar"))
+                        .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
+                .withEnv(KvEnv.KVNODE_NAME, nodeAlias)
+                .withEnv(KvEnv.IN_MEMORY, "true")
+                .withExposedPorts(port)
+                .withNetwork(network)
+                .withNetworkAliases(nodeAlias)
+                .withLogConsumer(f -> System.out.print(((OutputFrame) f).getUtf8String()))
+                .withStartupTimeout(Duration.of(STARTUP_TIMEOUT_SEC, SECONDS));
+    }
+
+
     public static GenericContainer nodeWithRedis(Network network, String nodeAlias, int port, String redisHostName) {
         return new GenericContainer(
                 new ImageFromDockerfile()

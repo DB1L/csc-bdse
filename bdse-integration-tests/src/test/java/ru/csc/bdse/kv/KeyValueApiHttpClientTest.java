@@ -2,13 +2,8 @@ package ru.csc.bdse.kv;
 
 import org.junit.ClassRule;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.images.builder.ImageFromDockerfile;
-import ru.csc.bdse.util.KvEnv;
-
-import java.io.File;
-import java.time.Duration;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
+import org.testcontainers.containers.Network;
+import ru.csc.bdse.util.DockerUtils;
 
 /**
  * @author semkagtn
@@ -16,15 +11,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class KeyValueApiHttpClientTest extends AbstractKeyValueApiTest {
 
     @ClassRule
-    public static final GenericContainer node = new GenericContainer(
-            new ImageFromDockerfile()
-                    .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
-                            ("../bdse-kvnode/target/bdse-kvnode-0.0.1-SNAPSHOT-boot.jar"))
-                    .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
-            .withEnv(KvEnv.KVNODE_NAME, "node-0")
-            .withEnv(KvEnv.IN_MEMORY, "true")
-            .withExposedPorts(8080)
-            .withStartupTimeout(Duration.of(30, SECONDS));
+    public static final GenericContainer node = DockerUtils.nodeInMemory(Network.newNetwork(), "node-0", 8080);
 
     @Override
     protected KeyValueApi newKeyValueApi() {

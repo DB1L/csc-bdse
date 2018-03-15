@@ -4,13 +4,8 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.junit.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.images.builder.ImageFromDockerfile;
-import ru.csc.bdse.util.KvEnv;
+import ru.csc.bdse.util.DockerUtils;
 
-import java.io.File;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,8 +15,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 /**
  * Test have to be implemented
  *
@@ -30,6 +23,9 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
     private static final int ATTEMPTS = 1000;
     private static final int THREADS = 20;
+    
+    private static final String NODE_NAME = "node-0";
+    private static final int NODE_PORT = 8080;
 
     private static GenericContainer redis;
     private static GenericContainer node;
@@ -37,31 +33,18 @@ public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
     @BeforeClass
     public static void setUp() {
         final Network network = Network.newNetwork();
-        redis = new GenericContainer(new RemoteDockerImage("redis", "latest"))
-                .withCommand("redis-server", "--appendonly", "yes")
-                .withExposedPorts(RedisKeyValueApiTest.REDIS_PORT)
-                .withNetwork(network)
-                .withNetworkAliases("redis")
-                .withStartupTimeout(Duration.of(30, SECONDS));
+
+        final String redisHost = "redis";
+        redis = DockerUtils.redis(network, redisHost);
         redis.start();
-        node = new GenericContainer(
-                new ImageFromDockerfile()
-                        .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
-                                ("../bdse-kvnode/target/bdse-kvnode-0.0.1-SNAPSHOT-boot.jar"))
-                        .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
-                .withEnv(KvEnv.KVNODE_NAME, "node-0")
-                .withEnv(KvEnv.REDIS_HOSTNAME, "redis")
-                .withEnv(KvEnv.REDIS_PORT, String.valueOf(RedisKeyValueApiTest.REDIS_PORT))
-                .withExposedPorts(8080)
-                .withNetwork(network)
-                .withLogConsumer(f -> System.out.print(((OutputFrame) f).getUtf8String()))
-                .withStartupTimeout(Duration.of(30, SECONDS));
+
+        node = DockerUtils.nodeWithRedis(network, NODE_NAME, NODE_PORT, redisHost);
         node.start();
     }
 
     @Before
     public void bringUp() {
-        api.action("node-0", NodeAction.UP);
+        api.action(NODE_NAME, NodeAction.UP);
     }
 
     @AfterClass
@@ -73,7 +56,7 @@ public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
     private KeyValueApi api = newKeyValueApi();
 
     protected KeyValueApi newKeyValueApi() {
-        final String baseUrl = "http://localhost:" + node.getMappedPort(8080);
+        final String baseUrl = "http://localhost:" + node.getMappedPort(NODE_PORT);
         return new KeyValueApiHttpClient(baseUrl);
     }
 
