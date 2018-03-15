@@ -27,16 +27,14 @@ public abstract class PhoneBookNonFunctionalTest<R extends Record> {
 
     protected abstract String version();
 
-    private static final int APP_PORT = 8798;
-
     @Test
     public void putGetErasureWithStoppedNode() {
         final Network network = Network.newNetwork();
         //Node is not started
-        final GenericContainer app = DockerUtils.app(network, APP_PORT, "node-0", 8080, version());
+        final GenericContainer app = DockerUtils.app(network, "node-0", version());
         app.start();
 
-        final PhoneBookApi<R> api = newPhoneBookApi(app.getMappedPort(APP_PORT));
+        final PhoneBookApi<R> api = newPhoneBookApi(app.getMappedPort(8080));
         final R record = randomGenerator().get();
 
         try {
@@ -74,15 +72,14 @@ public abstract class PhoneBookNonFunctionalTest<R extends Record> {
         redis.start();
 
         final String nodeName = "node-0";
-        final int nodePort = 8080;
-        final GenericContainer node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
+        final GenericContainer node = DockerUtils.nodeWithRedis(network, nodeName, redisHost);
         node.start();
 
-        final GenericContainer app = DockerUtils.app(network, APP_PORT, nodeName, nodePort, version());
+        final GenericContainer app = DockerUtils.app(network, nodeName, version());
         app.start();
 
         final R record = randomGenerator().get();
-        final PhoneBookApi<R> api = newPhoneBookApi(app.getMappedPort(APP_PORT));
+        final PhoneBookApi<R> api = newPhoneBookApi(app.getMappedPort(8080));
         api.put(record);
 
         app.stop();
@@ -94,10 +91,14 @@ public abstract class PhoneBookNonFunctionalTest<R extends Record> {
         }
 
         app.start();
-        final PhoneBookApi<R> apiAfterRestart = newPhoneBookApi(app.getMappedPort(APP_PORT));
+        final PhoneBookApi<R> apiAfterRestart = newPhoneBookApi(app.getMappedPort(8080));
         //noinspection ConstantConditions
         final Set<R> result = apiAfterRestart.get(record.literals().stream().findFirst().get());
         Assert.assertEquals(Collections.singleton(record), result);
+
+        app.close();
+        node.close();
+        redis.close();
     }
 
     @Test
@@ -109,15 +110,14 @@ public abstract class PhoneBookNonFunctionalTest<R extends Record> {
         redis.start();
 
         final String nodeName = "node-0";
-        final int nodePort = 8080;
-        final GenericContainer node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
+        final GenericContainer node = DockerUtils.nodeWithRedis(network, nodeName, redisHost);
         node.start();
 
-        final GenericContainer app = DockerUtils.app(network, APP_PORT, nodeName, nodePort, version());
+        final GenericContainer app = DockerUtils.app(network, nodeName, version());
         app.start();
 
         final R record = randomGenerator().get();
-        final PhoneBookApi<R> api = newPhoneBookApi(app.getMappedPort(APP_PORT));
+        final PhoneBookApi<R> api = newPhoneBookApi(app.getMappedPort(8080));
         api.put(record);
 
         node.stop();
@@ -133,5 +133,9 @@ public abstract class PhoneBookNonFunctionalTest<R extends Record> {
         //noinspection ConstantConditions
         final Set<R> result = api.get(record.literals().stream().findFirst().get());
         Assert.assertEquals(Collections.singleton(record), result);
+
+        app.close();
+        node.close();
+        redis.close();
     }
 }

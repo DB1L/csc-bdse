@@ -11,7 +11,7 @@ import ru.csc.bdse.util.DockerUtils;
 public class KeyValueApiHttpClientTest extends AbstractKeyValueApiTest {
 
     @ClassRule
-    public static final GenericContainer node = DockerUtils.nodeInMemory(Network.newNetwork(), "node-0", 8080);
+    public static final GenericContainer node = DockerUtils.nodeInMemory(Network.newNetwork(), "node-0");
 
     @Override
     protected KeyValueApi newKeyValueApi() {

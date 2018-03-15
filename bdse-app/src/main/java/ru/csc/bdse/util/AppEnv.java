@@ -7,7 +7,6 @@ public class AppEnv {
 
     }
 
-    public static final String APP_PORT = "APP_PORT";
     public static final String KVNODE_URL = "KVNODE_URL";
     public static final String PHONE_BOOK_VERSION = "PHONE_BOOK_VERSION";
 

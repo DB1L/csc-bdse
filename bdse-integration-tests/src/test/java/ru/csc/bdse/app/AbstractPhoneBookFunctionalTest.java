@@ -27,7 +27,6 @@ public abstract class AbstractPhoneBookFunctionalTest<R extends Record> {
 
     protected abstract String version();
 
-    private static final int APP_PORT = 8798;
     private GenericContainer redis;
     private GenericContainer node;
     private GenericContainer app;
@@ -42,14 +41,13 @@ public abstract class AbstractPhoneBookFunctionalTest<R extends Record> {
         redis.start();
 
         final String nodeName = "node-0";
-        final int nodePort = 8080;
-        node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
+        node = DockerUtils.nodeWithRedis(network, nodeName, redisHost);
         node.start();
 
-        app = DockerUtils.app(network, APP_PORT, nodeName, nodePort, version());
+        app = DockerUtils.app(network, nodeName, version());
         app.start();
 
-        api = newPhoneBookApi(app.getMappedPort(APP_PORT));
+        api = newPhoneBookApi(app.getMappedPort(8080));
     }
 
     @After

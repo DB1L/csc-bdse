@@ -25,8 +25,6 @@ public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
     private static final int THREADS = 20;
     
     private static final String NODE_NAME = "node-0";
-    private static final int NODE_PORT = 8080;
-
     private static GenericContainer redis;
     private static GenericContainer node;
 
@@ -38,7 +36,7 @@ public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
         redis = DockerUtils.redis(network, redisHost);
         redis.start();
 
-        node = DockerUtils.nodeWithRedis(network, NODE_NAME, NODE_PORT, redisHost);
+        node = DockerUtils.nodeWithRedis(network, NODE_NAME, redisHost);
         node.start();
     }
 
@@ -56,7 +54,7 @@ public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
     private KeyValueApi api = newKeyValueApi();
 
     protected KeyValueApi newKeyValueApi() {
-        final String baseUrl = "http://localhost:" + node.getMappedPort(NODE_PORT);
+        final String baseUrl = "http://localhost:" + node.getMappedPort(8080);
         return new KeyValueApiHttpClient(baseUrl);
     }
 

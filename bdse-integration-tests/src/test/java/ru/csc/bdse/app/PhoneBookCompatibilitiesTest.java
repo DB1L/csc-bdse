@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
  * @author alesavin
  */
 public class PhoneBookCompatibilitiesTest {
-    private static final int APP_V1_PORT = 8798;
-    private static final int APP_V11_PORT = 8799;
-
     private PhoneBookApi<RecordV1> apiV1;
     private PhoneBookApi<RecordV11> apiV11;
 
@@ -43,18 +40,17 @@ public class PhoneBookCompatibilitiesTest {
         redis.start();
 
         final String nodeName = "node-0";
-        final int nodePort = 8080;
-        node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
+        node = DockerUtils.nodeWithRedis(network, nodeName, redisHost);
         node.start();
 
-        appV1 = DockerUtils.app(network, APP_V1_PORT, nodeName, nodePort, "1.0");
+        appV1 = DockerUtils.app(network, nodeName, "1.0");
         appV1.start();
 
-        appV11 = DockerUtils.app(network, APP_V11_PORT, nodeName, nodePort, "1.1");
+        appV11 = DockerUtils.app(network, nodeName, "1.1");
         appV11.start();
 
-        apiV1 = new PhoneBookV1Client("http://localhost:" + appV1.getMappedPort(APP_V1_PORT));
-        apiV11 = new PhoneBookV11Client("http://localhost:" + appV11.getMappedPort(APP_V11_PORT));
+        apiV1 = new PhoneBookV1Client("http://localhost:" + appV1.getMappedPort(8080));
+        apiV11 = new PhoneBookV11Client("http://localhost:" + appV11.getMappedPort(8080));
     }
 
     @After

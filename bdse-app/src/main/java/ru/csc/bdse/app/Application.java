@@ -26,13 +26,4 @@ public class Application {
         final String nodeUrl = AppEnv.get(AppEnv.KVNODE_URL).orElse("localhost:8080");
         return new KeyValueApiHttpClient(nodeUrl);
     }
-
-    @Configuration
-    public class ServletConfig {
-        @Bean
-        public EmbeddedServletContainerCustomizer containerCustomizer() {
-            final int appPort = Integer.valueOf(AppEnv.get(AppEnv.APP_PORT).orElse("8090"));
-            return (container -> container.setPort(appPort));
-        }
-    }
 }
