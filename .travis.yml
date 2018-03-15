@@ -23,7 +23,7 @@ install: true
 before_script:
   - wget https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-all-3.5.1.tar.gz
   - tar -xzvf protobuf-all-3.5.1.tar.gz
-  - pushd protobuf-2.4.1 && ./configure --prefix=/usr && make && sudo make install && popd
+  - pushd protobuf-3.5.1 && ./configure --prefix=/usr && make && sudo make install && popd
 
 script:
   - ./mvnw --projects bdse-kvnode clean package
