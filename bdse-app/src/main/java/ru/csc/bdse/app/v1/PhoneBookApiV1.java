@@ -8,6 +8,7 @@ import ru.csc.bdse.app.PhoneBookApi;
 import ru.csc.bdse.app.v1.proto.RecordV1OuterClass;
 import ru.csc.bdse.kv.KeyValueApi;
 
+import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 import java.util.Set;
@@ -49,6 +50,12 @@ public class PhoneBookApiV1 implements PhoneBookApi<RecordV1> {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handle(IllegalArgumentException e) {
+        return Optional.ofNullable(e.getMessage()).orElse("");
+    }
+
+    @ExceptionHandler(IOException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public String handle(IOException e) {
         return Optional.ofNullable(e.getMessage()).orElse("");
     }
 

@@ -1,8 +1,12 @@
 package ru.csc.bdse.app;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import ru.csc.bdse.util.DockerUtils;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -19,13 +23,40 @@ public abstract class AbstractPhoneBookFunctionalTest<R extends Record> {
 
     protected abstract Supplier<R> sameKeyGenerator();
 
-    protected abstract PhoneBookApi<R> newPhoneBookApi();
+    protected abstract PhoneBookApi<R> newPhoneBookApi(int port);
 
+    protected abstract String version();
+
+    private static final int APP_PORT = 8798;
+    private GenericContainer redis;
+    private GenericContainer node;
+    private GenericContainer app;
     private PhoneBookApi<R> api;
 
     @Before
     public void setUp() {
-        api = newPhoneBookApi();
+        final Network network = Network.newNetwork();
+
+        final String redisHost = "redis";
+        redis = DockerUtils.redis(network, redisHost);
+        redis.start();
+
+        final String nodeName = "node-0";
+        final int nodePort = 8080;
+        node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
+        node.start();
+
+        app = DockerUtils.app(network, APP_PORT, nodeName, nodePort, version());
+        app.start();
+
+        api = newPhoneBookApi(app.getMappedPort(APP_PORT));
+    }
+
+    @After
+    public void tearDown() {
+        app.close();
+        node.close();
+        redis.close();
     }
 
     @Test
