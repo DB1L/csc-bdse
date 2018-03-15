@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.csc.bdse.app.PhoneBookApi;
 import ru.csc.bdse.app.v11.proto.RecordV11OuterClass;
 import ru.csc.bdse.kv.KeyValueApi;
-import ru.csc.bdse.util.Require;
 
 import java.io.UncheckedIOException;
 import java.util.Optional;
@@ -60,11 +59,11 @@ public class PhoneBookApiV11 implements PhoneBookApi<RecordV11> {
     }
 
     private String regularKey(RecordV11 record) {
-        return record.lastName() + '#' + record.firstName();
+        return record.lastName() + '-' + record.firstName();
     }
 
     private String nickKey(RecordV11 record) {
-        return record.nickName() + '#' + record.lastName() + '#' + record.firstName();
+        return record.nickName() + '-' + record.lastName() + '-' + record.firstName();
     }
 
     private byte[] encode(RecordV11 record) {

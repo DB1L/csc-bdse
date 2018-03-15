@@ -14,6 +14,8 @@ import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang.RandomStringUtils.randomNumeric;
 
 public class PhoneBookApiV1Test extends AbstractPhoneBookFunctionalTest<RecordV1> {
+    private static final int APP_PORT = 8798;
+
     private static final String FIRST_NAME = randomAlphabetic(10);
     private static final String LAST_NAME = randomAlphabetic(10);
     private static final Supplier<RecordV1> SAME_KEY_GENERATOR = () ->
@@ -56,7 +58,7 @@ public class PhoneBookApiV1Test extends AbstractPhoneBookFunctionalTest<RecordV1
         node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
         node.start();
 
-        app = DockerUtils.app(network, 8090, nodeName, nodePort, "1.0");
+        app = DockerUtils.app(network, APP_PORT, nodeName, nodePort, "1.0");
         app.start();
 
         super.setUp();
@@ -71,6 +73,6 @@ public class PhoneBookApiV1Test extends AbstractPhoneBookFunctionalTest<RecordV1
 
     @Override
     protected PhoneBookApi<RecordV1> newPhoneBookApi() {
-        return new PhoneBookV1Client("http://localhost:" + app.getMappedPort(8090));
+        return new PhoneBookV1Client("http://localhost:" + app.getMappedPort(APP_PORT));
     }
 }

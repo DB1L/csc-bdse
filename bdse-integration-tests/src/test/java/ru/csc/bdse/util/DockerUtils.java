@@ -48,6 +48,7 @@ public class DockerUtils {
                         .withFileFromClasspath("Dockerfile", "app/Dockerfile"))
                 .withEnv(AppEnv.KVNODE_URL, "http://" + nodeAlias + ":" + nodePort)
                 .withEnv(AppEnv.PHONE_BOOK_VERSION, version)
+                .withEnv(AppEnv.APP_PORT, String.valueOf(port))
                 .withExposedPorts(port)
                 .withNetwork(network)
                 .withLogConsumer(f -> System.out.print(((OutputFrame) f).getUtf8String()))

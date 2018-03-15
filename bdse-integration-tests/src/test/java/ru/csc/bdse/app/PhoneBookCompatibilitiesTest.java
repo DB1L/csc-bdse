@@ -4,11 +4,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.csc.bdse.app.v1.PhoneBookApiV1;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import ru.csc.bdse.app.v1.PhoneBookV1Client;
 import ru.csc.bdse.app.v1.RecordV1;
-import ru.csc.bdse.app.v11.PhoneBookApiV11;
+import ru.csc.bdse.app.v11.PhoneBookV11Client;
 import ru.csc.bdse.app.v11.RecordV11;
-import ru.csc.bdse.kv.InMemoryKeyValueApi;
+import ru.csc.bdse.util.DockerUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,21 +23,49 @@ import java.util.stream.Collectors;
  * @author alesavin
  */
 public class PhoneBookCompatibilitiesTest {
+    private static final int APP_V1_PORT = 8798;
+    private static final int APP_V11_PORT = 8799;
+
     private PhoneBookApi<RecordV1> apiV1;
     private PhoneBookApi<RecordV11> apiV11;
 
-    // TODO: 15.03.18 these tests must be integration
+    private GenericContainer redis;
+    private GenericContainer node;
+    private GenericContainer appV1;
+    private GenericContainer appV11;
+
     @Before
     public void setUp() {
-        final InMemoryKeyValueApi kv = new InMemoryKeyValueApi("test");
-        apiV1 = new PhoneBookApiV1(kv);
-        apiV11 = new PhoneBookApiV11(kv);
+        final Network network = Network.newNetwork();
+
+        final String redisHost = "redis";
+        redis = DockerUtils.redis(network, redisHost);
+        redis.start();
+
+        final String nodeName = "node-0";
+        final int nodePort = 8080;
+        node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
+        node.start();
+
+        appV1 = DockerUtils.app(network, APP_V1_PORT, nodeName, nodePort, "1.0");
+        appV1.start();
+
+        appV11 = DockerUtils.app(network, APP_V11_PORT, nodeName, nodePort, "1.1");
+        appV11.start();
+
+        apiV1 = new PhoneBookV1Client("http://localhost:" + appV1.getMappedPort(APP_V1_PORT));
+        apiV11 = new PhoneBookV11Client("http://localhost:" + appV11.getMappedPort(APP_V11_PORT));
     }
 
     @After
     public void tearDown() {
         apiV1 = null;
         apiV11 = null;
+
+        appV1.close();
+        appV11.close();
+        node.close();
+        redis.close();
     }
 
     @Test

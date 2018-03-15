@@ -57,7 +57,7 @@ public class PhoneBookApiV1 implements PhoneBookApi<RecordV1> {
     }
 
     private String key(RecordV1 recordV1) {
-        return recordV1.lastName() + '#' + recordV1.firstName();
+        return recordV1.lastName() + '-' + recordV1.firstName();
     }
 
     private byte[] encode(RecordV1 record) {
