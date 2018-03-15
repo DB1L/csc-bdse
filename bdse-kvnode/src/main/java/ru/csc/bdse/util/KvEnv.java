@@ -5,9 +5,9 @@ import java.util.Optional;
 /**
  * @author semkagtn
  */
-public class Env {
+public class KvEnv {
 
-    private Env() {
+    private KvEnv() {
 
     }
 

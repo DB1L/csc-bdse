@@ -1,8 +1,12 @@
 package ru.csc.bdse.app;
 
-import ru.csc.bdse.app.v1.PhoneBookApiV1;
+import org.junit.After;
+import org.junit.Before;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import ru.csc.bdse.app.v1.PhoneBookV1Client;
 import ru.csc.bdse.app.v1.RecordV1;
-import ru.csc.bdse.kv.InMemoryKeyValueApi;
+import ru.csc.bdse.util.DockerUtils;
 
 import java.util.function.Supplier;
 
@@ -25,6 +29,10 @@ public class PhoneBookApiV1Test extends AbstractPhoneBookFunctionalTest<RecordV1
                     randomNumeric(10)
             );
 
+    private GenericContainer redis;
+    private GenericContainer node;
+    private GenericContainer app;
+
     @Override
     protected Supplier<RecordV1> randomGenerator() {
         return RANDOM_GENERATOR;
@@ -35,9 +43,34 @@ public class PhoneBookApiV1Test extends AbstractPhoneBookFunctionalTest<RecordV1
         return SAME_KEY_GENERATOR;
     }
 
-    // TODO: 15.03.18 it must be integration test
+    @Before
+    public void setUp() {
+        final Network network = Network.newNetwork();
+
+        final String redisHost = "redis";
+        redis = DockerUtils.redis(network, redisHost);
+        redis.start();
+
+        final String nodeName = "node-0";
+        final int nodePort = 8080;
+        node = DockerUtils.nodeWithRedis(network, nodeName, nodePort, redisHost);
+        node.start();
+
+        app = DockerUtils.app(network, 8090, nodeName, nodePort, "1.0");
+        app.start();
+
+        super.setUp();
+    }
+
+    @After
+    public void tearDown() {
+        app.close();
+        node.close();
+        redis.close();
+    }
+
     @Override
     protected PhoneBookApi<RecordV1> newPhoneBookApi() {
-        return new PhoneBookApiV1(new InMemoryKeyValueApi("test"));
+        return new PhoneBookV1Client("http://localhost:" + app.getMappedPort(8090));
     }
 }

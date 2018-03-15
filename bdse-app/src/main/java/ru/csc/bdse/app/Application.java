@@ -3,8 +3,9 @@ package ru.csc.bdse.app;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import ru.csc.bdse.kv.InMemoryKeyValueApi;
 import ru.csc.bdse.kv.KeyValueApi;
+import ru.csc.bdse.kv.KeyValueApiHttpClient;
+import ru.csc.bdse.util.AppEnv;
 
 import java.util.Collections;
 
@@ -13,13 +14,14 @@ public class Application {
 
     public static void main(String[] args) {
         final SpringApplication application = new SpringApplication(Application.class);
-        application.setDefaultProperties(Collections.singletonMap("phone.version", "1.0"));
+        final String version = AppEnv.get(AppEnv.PHONE_BOOK_VERSION).orElse("1.0");
+        application.setDefaultProperties(Collections.singletonMap("phone.version", version));
         application.run(args);
     }
 
     @Bean
     KeyValueApi node() {
-        // TODO: 12.03.18 get host from env and create client
-        return new InMemoryKeyValueApi("a");
+        final String nodeUrl = AppEnv.get(AppEnv.KVNODE_URL).orElse("localhost:8080");
+        return new KeyValueApiHttpClient(nodeUrl);
     }
 }

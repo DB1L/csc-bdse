@@ -7,7 +7,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.ImageFromDockerfile;
-import ru.csc.bdse.util.Env;
+import ru.csc.bdse.util.KvEnv;
 
 import java.io.File;
 import java.time.Duration;
@@ -49,9 +49,9 @@ public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
                         .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
                                 ("../bdse-kvnode/target/bdse-kvnode-0.0.1-SNAPSHOT-boot.jar"))
                         .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
-                .withEnv(Env.KVNODE_NAME, "node-0")
-                .withEnv(Env.REDIS_HOSTNAME, "redis")
-                .withEnv(Env.REDIS_PORT, String.valueOf(RedisKeyValueApiTest.REDIS_PORT))
+                .withEnv(KvEnv.KVNODE_NAME, "node-0")
+                .withEnv(KvEnv.REDIS_HOSTNAME, "redis")
+                .withEnv(KvEnv.REDIS_PORT, String.valueOf(RedisKeyValueApiTest.REDIS_PORT))
                 .withExposedPorts(8080)
                 .withNetwork(network)
                 .withLogConsumer(f -> System.out.print(((OutputFrame) f).getUtf8String()))

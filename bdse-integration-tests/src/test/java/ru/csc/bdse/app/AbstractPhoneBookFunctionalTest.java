@@ -1,6 +1,7 @@
 package ru.csc.bdse.app;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
@@ -20,7 +21,12 @@ public abstract class AbstractPhoneBookFunctionalTest<R extends Record> {
 
     protected abstract PhoneBookApi<R> newPhoneBookApi();
 
-    private PhoneBookApi<R> api = newPhoneBookApi();
+    private PhoneBookApi<R> api;
+
+    @Before
+    public void setUp() {
+        api = newPhoneBookApi();
+    }
 
     @Test
     public void getFromEmptyBook() {
@@ -85,7 +91,7 @@ public abstract class AbstractPhoneBookFunctionalTest<R extends Record> {
                 recordsByLiterals.get(lit).add(record);
             }
         }
-        
+
         for (Character lit : recordsByLiterals.keySet()) {
             Assert.assertEquals(recordsByLiterals.get(lit), api.get(lit));
         }
