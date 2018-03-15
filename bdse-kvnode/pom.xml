@@ -9,4 +9,17 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>bdse-kvnode</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <classifier>
+                        boot
+                    </classifier>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

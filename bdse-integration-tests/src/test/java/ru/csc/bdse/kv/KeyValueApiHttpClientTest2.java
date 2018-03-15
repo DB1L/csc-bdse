@@ -47,7 +47,7 @@ public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
         node = new GenericContainer(
                 new ImageFromDockerfile()
                         .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
-                                ("../bdse-kvnode/target/bdse-kvnode-0.0.1-SNAPSHOT.jar"))
+                                ("../bdse-kvnode/target/bdse-kvnode-0.0.1-SNAPSHOT-boot.jar"))
                         .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
                 .withEnv(Env.KVNODE_NAME, "node-0")
                 .withEnv(Env.REDIS_HOSTNAME, "redis")
