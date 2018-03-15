@@ -26,5 +26,4 @@ before_script:
   - cp ./bin/protoc /usr/bin/
 
 script:
-  - ./mvnw --projects bdse-kvnode clean package
-  - ./mvnw --projects bdse-integration-tests --also-make test
+  - ./mvnw package
