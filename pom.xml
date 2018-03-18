@@ -79,11 +79,22 @@
                     <groupId>org.xolstice.maven.plugins</groupId>
                     <artifactId>protobuf-maven-plugin</artifactId>
                     <version>0.5.1</version>
+                    <extensions>true</extensions>
                     <configuration>
-                        <protocExecutable>/usr/bin/protoc</protocExecutable>
+                        <checkStaleness>true</checkStaleness>
+                        <protocArtifact>
+                            com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}
+                        </protocArtifact>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.3.0.Final</version>
+            </extension>
+        </extensions>
     </build>
 </project>
