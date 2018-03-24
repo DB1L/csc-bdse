@@ -29,6 +29,7 @@
         <testcontainers.version>1.6.0</testcontainers.version>
         <docker-java.version>3.0.14</docker-java.version>
         <jedis.version>2.9.0</jedis.version>
+        <protobuf-java.version>3.5.1</protobuf-java.version>
     </properties>
 
     <dependencyManagement>
@@ -37,6 +38,11 @@
                 <groupId>ru.csc</groupId>
                 <artifactId>bdse-kvnode</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf-java.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -67,11 +73,28 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.xolstice.maven.plugins</groupId>
+                    <artifactId>protobuf-maven-plugin</artifactId>
+                    <version>0.5.1</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <checkStaleness>true</checkStaleness>
+                        <protocArtifact>
+                            com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}
+                        </protocArtifact>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.3.0.Final</version>
+            </extension>
+        </extensions>
     </build>
 </project>

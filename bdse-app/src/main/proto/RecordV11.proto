@@ -1,0 +1,9 @@
+syntax = "proto3";
+package ru.csc.bdse.app.v11.proto;
+
+message RecordV11 {
+    string first_name = 1;
+    string last_name = 2;
+    repeated string phone = 3;
+    string nick_name = 4;
+}
