@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  *
  * @author alesavin
  */
-public class KeyValueApiHttpClientTest2 extends AbstractKeyValueApiTest {
+public class KeyValueApiHttpClientNonFunctionalTest extends AbstractKeyValueApiTest {
     private static final int ATTEMPTS = 1000;
     private static final int THREADS = 20;
     
