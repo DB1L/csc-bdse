@@ -55,20 +55,22 @@ public class RedisKeyValueApi implements KeyValueApi {
 
     @Override
     public void action(String node, NodeAction action) {
-        lock.writeLock().lock();
-        try {
-            switch (action) {
-                case DOWN:
-                    status = NodeStatus.DOWN;
-                    break;
-                case UP:
-                    status = NodeStatus.UP;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid action \"" + action + "\" for node \"" + node + "\"");
+        if (node.equals(nodeId)) {
+            lock.writeLock().lock();
+            try {
+                switch (action) {
+                    case DOWN:
+                        status = NodeStatus.DOWN;
+                        break;
+                    case UP:
+                        status = NodeStatus.UP;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid action \"" + action + "\" for node \"" + node + "\"");
+                }
+            } finally {
+                lock.writeLock().unlock();
             }
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 

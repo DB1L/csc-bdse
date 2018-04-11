@@ -13,12 +13,15 @@
     <dependencies>
         <dependency>
             <groupId>ru.csc</groupId>
-            <artifactId>bdse-kvnode</artifactId>
+            <artifactId>bdse-app</artifactId>
         </dependency>
         <dependency>
             <groupId>ru.csc</groupId>
-            <artifactId>bdse-app</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <artifactId>bdse-kvnode</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
         </dependency>
     </dependencies>
 </project>

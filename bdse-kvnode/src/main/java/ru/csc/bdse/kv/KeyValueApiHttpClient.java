@@ -1,6 +1,7 @@
 package ru.csc.bdse.kv;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -24,12 +25,17 @@ import java.util.Set;
 public class KeyValueApiHttpClient implements KeyValueApi {
 
     private final String baseUrl;
-    private final RestTemplate rest = new RestTemplate();
+    private final RestTemplate rest;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public KeyValueApiHttpClient(final String baseUrl) {
+        this(baseUrl, 1000);
+    }
+
+    public KeyValueApiHttpClient(final String baseUrl, final int timeoutMills) {
         Require.nonEmpty(baseUrl, "empty base url");
         this.baseUrl = baseUrl;
+        this.rest = new RestTemplateBuilder().setConnectTimeout(timeoutMills).setReadTimeout(timeoutMills).build();
     }
 
     @Override

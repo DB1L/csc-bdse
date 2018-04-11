@@ -15,7 +15,6 @@ public class KeyValueApiHttpClientTest extends AbstractKeyValueApiTest {
 
     @Override
     protected KeyValueApi newKeyValueApi() {
-        final String baseUrl = "http://localhost:" + node.getMappedPort(8080);
-        return new KeyValueApiHttpClient(baseUrl);
+        return new KeyValueApiHttpClient("http://localhost:" + node.getMappedPort(8080));
     }
 }

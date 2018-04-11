@@ -9,6 +9,9 @@ import ru.csc.bdse.kv.RedisKeyValueApiTest;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -25,6 +28,15 @@ public class DockerUtils {
     }
 
     public static GenericContainer nodeInMemory(Network network, String nodeAlias) {
+        return nodeInMemory(network, nodeAlias, Collections.singletonList("https://" + nodeAlias + ":8080"), 10000, 1, 1);
+    }
+
+    public static GenericContainer nodeInMemory(Network network,
+                                                String nodeAlias,
+                                                List<String> otherNodes,
+                                                long timeoutMills,
+                                                int wcl,
+                                                int rcl) {
         return new GenericContainer(
                 new ImageFromDockerfile()
                         .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
@@ -32,6 +44,10 @@ public class DockerUtils {
                         .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
                 .withEnv(KvEnv.KVNODE_NAME, nodeAlias)
                 .withEnv(KvEnv.IN_MEMORY, "true")
+                .withEnv(KvEnv.HOSTS, otherNodes.stream().collect(Collectors.joining(",")))
+                .withEnv(KvEnv.RCL, Integer.toString(rcl))
+                .withEnv(KvEnv.WCL, Integer.toString(wcl))
+                .withEnv(KvEnv.TIMEOUT_MILLS, Long.toString(timeoutMills))
                 .withExposedPorts(8080)
                 .withNetwork(network)
                 .withNetworkAliases(nodeAlias)

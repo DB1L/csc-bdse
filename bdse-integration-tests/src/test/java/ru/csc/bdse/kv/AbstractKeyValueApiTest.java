@@ -1,14 +1,18 @@
 package ru.csc.bdse.kv;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.assertj.core.api.SoftAssertions;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.csc.bdse.util.Constants;
 import ru.csc.bdse.util.Random;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -16,10 +20,19 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
  * @author semkagtn
  */
 public abstract class AbstractKeyValueApiTest {
+    private static final int ATTEMPTS = 100;
+    private static final int THREADS = 10;
 
     protected abstract KeyValueApi newKeyValueApi();
 
-    private KeyValueApi api = newKeyValueApi();
+    private final KeyValueApi api = newKeyValueApi();
+
+    @Before
+    public void reset() {
+        api.getInfo().stream().map(NodeInfo::getName)
+                .forEach(nodeName -> api.action(nodeName, NodeAction.UP));
+        api.getKeys("").forEach(api::delete);
+    }
 
     @Test
     public void createValue() {
@@ -94,8 +107,9 @@ public abstract class AbstractKeyValueApiTest {
     public void getClusterInfoValue() {
         SoftAssertions softAssert = new SoftAssertions();
 
+        api.getInfo().forEach(n -> api.action(n.getName(), NodeAction.UP));
         Set<NodeInfo> info = api.getInfo();
-        softAssert.assertThat(info).as("size").hasSize(1);
+        softAssert.assertThat(info).as("size").isNotEmpty();
         softAssert.assertThat(info.iterator().next().getStatus()).as("status").isEqualTo(NodeStatus.UP);
 
         softAssert.assertAll();
@@ -128,5 +142,108 @@ public abstract class AbstractKeyValueApiTest {
         softAssert.assertThat(actualPrefix2Keys).as("prefix2").isEqualTo(prefix2Keys);
 
         softAssert.assertAll();
+    }
+
+    @Test
+    public void concurrentPuts() throws InterruptedException {
+        final Thread[] threads = new Thread[THREADS];
+        for (int i = 0; i < threads.length; ++i) {
+            threads[i] = new Thread(() -> {
+                for (int j = 0; j < ATTEMPTS; ++j) {
+                    final byte[] value = String.valueOf(j).getBytes();
+                    api.put("key", value);
+                }
+            });
+            threads[i].start();
+        }
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        final Optional<byte[]> finalResult = api.get("key");
+        Assert.assertTrue(finalResult.isPresent());
+
+        Assert.assertEquals(String.valueOf(ATTEMPTS - 1), finalResult.map(String::new).orElse("NAN"));
+    }
+
+    @Test
+    public void concurrentDeleteAndKeys() {
+        final String prefix = "prefix";
+        final List<String> keys = Stream.generate(UUID::randomUUID)
+                .map(UUID::toString)
+                .map(u -> prefix + u)
+                .limit(ATTEMPTS)
+                .collect(Collectors.toList());
+
+        for (String key : keys) {
+            api.put(key, key.getBytes());
+        }
+
+        final ExecutorService deleters = new ForkJoinPool(THREADS);
+        for (String key : keys) {
+            deleters.submit(() -> api.delete(key));
+        }
+
+        deleters.shutdown();
+
+        while (!deleters.isTerminated()) {
+            final Set<String> currentKeys = api.getKeys(prefix);
+            Assert.assertTrue(keys.containsAll(currentKeys));
+        }
+    }
+
+    @Test
+    public void actionUpDown() {
+        for (int i = 0; i < 10; ++i) {
+            api.getInfo().forEach(n -> api.action(n.getName(), NodeAction.DOWN));
+            api.getInfo().forEach(n -> Assert.assertEquals(NodeStatus.DOWN, n.getStatus()));
+
+            api.getInfo().forEach(n -> api.action(n.getName(), NodeAction.UP));
+            api.getInfo().forEach(n -> Assert.assertEquals(NodeStatus.UP, n.getStatus()));
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void putWithStoppedNode() {
+        api.getInfo().forEach(n -> api.action(n.getName(), NodeAction.DOWN));
+        api.put("key", "value".getBytes());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void getWithStoppedNode() {
+        api.getInfo().forEach(n -> api.action(n.getName(), NodeAction.DOWN));
+        api.get("key");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void getKeysByPrefixWithStoppedNode() {
+        api.getInfo().forEach(n -> api.action(n.getName(), NodeAction.DOWN));
+        api.getKeys("prefix");
+    }
+
+    @Test
+    public void deleteByTombstone() {
+        // TODO use tombstones to mark as deleted (optional)
+    }
+
+    // @Test
+    // Turned off, because it is time-consuming
+    public void loadMillionKeys() throws InterruptedException {
+        final int million = 1_000_000;
+        final Thread[] threads = new Thread[THREADS];
+        for (int i = 0; i < threads.length; ++i) {
+            threads[i] = new Thread(() -> {
+                for (int j = 0; j < million / THREADS; ++j) {
+                    api.put(UUID.randomUUID().toString(), RandomStringUtils.randomAlphanumeric(50).getBytes());
+                }
+            });
+            threads[i].start();
+        }
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        Assert.assertEquals(api.getKeys("").size(), million);
     }
 }

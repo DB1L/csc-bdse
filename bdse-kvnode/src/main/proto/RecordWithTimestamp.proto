@@ -1,0 +1,9 @@
+syntax = "proto3";
+package ru.csc.bdse.bdse.proto;
+
+message RecordWithTimestamp {
+    bytes payload = 1;
+    bool is_deleted = 2;
+    int64 created_at = 3;
+    int32 node_num = 4;
+}

@@ -20,38 +20,38 @@ public class KeyValueApiController {
 
     private final KeyValueApi keyValueApi;
 
-    public KeyValueApiController(final KeyValueApi keyValueApi) {
-        this.keyValueApi = keyValueApi;
+    public KeyValueApiController(final KeyValueApi localApi) {
+        this.keyValueApi = localApi;
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/key-value/{key}")
+    @RequestMapping(method = RequestMethod.PUT, value = "key-value/{key}")
     public void put(@PathVariable final String key,
                     @RequestBody final byte[] value) {
         keyValueApi.put(key, value);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/key-value/{key}")
+    @RequestMapping(method = RequestMethod.GET, value = "key-value/{key}")
     public byte[] get(@PathVariable final String key) {
         return keyValueApi.get(key)
                 .orElseThrow(() -> new NoSuchElementException(key));
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/key-value")
+    @RequestMapping(method = RequestMethod.GET, value = "key-value")
     public Set<String> getKeys(@RequestParam("prefix") String prefix) {
         return keyValueApi.getKeys(prefix);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/key-value/{key}")
+    @RequestMapping(method = RequestMethod.DELETE, value = "key-value/{key}")
     public void delete(@PathVariable final String key) {
         keyValueApi.delete(key);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/info")
+    @RequestMapping(method = RequestMethod.GET, value = "info")
     public Set<NodeInfo> getInfo() {
         return keyValueApi.getInfo();
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/action/{node}/{action}")
+    @RequestMapping(method = RequestMethod.POST, value = "action/{node}/{action}")
     public void action(@PathVariable final String node,
                        @PathVariable final NodeAction action) { keyValueApi.action(node, action); }
 
