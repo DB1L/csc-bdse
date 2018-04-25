@@ -85,9 +85,9 @@ public class PartitionedKeyValueApi implements KeyValueApi {
             latch.await(timeoutInMillis, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } finally {
+            futures.forEach(future -> future.cancel(true));
         }
-
-        futures.forEach(future -> future.cancel(true));
         return result;
     }
 }
