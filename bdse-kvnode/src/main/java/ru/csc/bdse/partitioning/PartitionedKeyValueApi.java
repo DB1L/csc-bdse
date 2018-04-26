@@ -8,18 +8,21 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
+import static java.util.stream.Collectors.toMap;
+
 public class PartitionedKeyValueApi implements KeyValueApi {
     private final Map<String, KeyValueApi> partitions;
-    private final Map<String, ExecutorService> executors = new HashMap<>();
+    private final Map<String, ExecutorService> executors;
 
     private final long timeoutInMillis;
     private final Partitioner partitioner;
 
-    public PartitionedKeyValueApi(Map<String, KeyValueApi> partitions, long timeoutInMillis, Partitioner partitioner) {
+    PartitionedKeyValueApi(Map<String, KeyValueApi> partitions, long timeoutInMillis, Partitioner partitioner) {
         this.partitions = partitions;
         this.timeoutInMillis = timeoutInMillis;
         this.partitioner = partitioner;
-        partitions.keySet().forEach(s -> executors.put(s, Executors.newSingleThreadExecutor()));
+        this.executors = partitions.entrySet().stream()
+                .collect(toMap(Map.Entry::getKey, e -> Executors.newSingleThreadExecutor()));
     }
 
 

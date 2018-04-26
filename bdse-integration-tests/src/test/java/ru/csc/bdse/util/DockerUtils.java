@@ -37,6 +37,16 @@ public class DockerUtils {
                                                 long timeoutMills,
                                                 int wcl,
                                                 int rcl) {
+        return nodeInMemory(network, nodeAlias, otherNodes, timeoutMills, wcl, rcl, KvEnv.Partitioners.CONSISTENT);
+    }
+
+    public static GenericContainer nodeInMemory(Network network,
+                                                String nodeAlias,
+                                                List<String> otherNodes,
+                                                long timeoutMills,
+                                                int wcl,
+                                                int rcl,
+                                                KvEnv.Partitioners partitioner) {
         return new GenericContainer(
                 new ImageFromDockerfile()
                         .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
@@ -48,6 +58,7 @@ public class DockerUtils {
                 .withEnv(KvEnv.RCL, Integer.toString(rcl))
                 .withEnv(KvEnv.WCL, Integer.toString(wcl))
                 .withEnv(KvEnv.TIMEOUT_MILLS, Long.toString(timeoutMills))
+                .withEnv(KvEnv.PARTITIONER, partitioner.toString())
                 .withExposedPorts(8080)
                 .withNetwork(network)
                 .withNetworkAliases(nodeAlias)
