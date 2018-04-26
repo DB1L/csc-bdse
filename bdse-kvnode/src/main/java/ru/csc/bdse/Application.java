@@ -8,12 +8,16 @@ import ru.csc.bdse.kv.InMemoryKeyValueApi;
 import ru.csc.bdse.kv.KeyValueApi;
 import ru.csc.bdse.kv.KeyValueApiHttpClient;
 import ru.csc.bdse.kv.RedisKeyValueApi;
+import ru.csc.bdse.partitioning.PartitionConfig;
+import ru.csc.bdse.partitioning.PartitionController;
 import ru.csc.bdse.util.KvEnv;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,10 +33,13 @@ public class Application {
     }
 
     @Bean
-    KeyValueApi localApi() {
-        final String nodeName = KvEnv.get(KvEnv.KVNODE_NAME).orElseGet(Application::randomNodeName);
-        final boolean inMemory = KvEnv.get(KvEnv.IN_MEMORY).map(Boolean::parseBoolean).orElse(false);
+    String nodeName() {
+        return KvEnv.get(KvEnv.KVNODE_NAME).orElseGet(Application::randomNodeName);
+    }
 
+    @Bean
+    KeyValueApi localApi(String nodeName) {
+        final boolean inMemory = KvEnv.get(KvEnv.IN_MEMORY).map(Boolean::parseBoolean).orElse(false);
         if (inMemory) {
             return new InMemoryKeyValueApi(nodeName);
         } else {
@@ -43,14 +50,37 @@ public class Application {
     }
 
     @Bean
-    CoordinatorConfig config(KeyValueApi localApi) {
+    CoordinatorConfig coordinatorConfig(String nodeName, KeyValueApi localApi) {
+        final List<String> nodesNames = KvEnv.get(KvEnv.HOSTS)
+                .map(h -> Arrays.stream(h.split(",")))
+                .orElse(Stream.empty())
+                .collect(Collectors.toList());
+
+        final int wcl = KvEnv.get(KvEnv.WCL).map(Integer::parseInt).orElse(nodesNames.size());
+        final int rcl = KvEnv.get(KvEnv.RCL).map(Integer::parseInt).orElse(nodesNames.size());
+        final int timeoutMills = KvEnv.get(KvEnv.TIMEOUT_MILLS)
+                .map(Integer::parseInt).orElse(10000);
+
+        final Map<String, KeyValueApi> apis = nodesNames.stream()
+                .collect(Collectors.toMap(
+                        s -> s,
+                        (Function<String, KeyValueApi>) s -> new KeyValueApiHttpClient("http://" + s + ":8080", timeoutMills)
+                ));
+
+        if (apis.isEmpty()) {
+            apis.put(nodeName, localApi);
+        }
+
+        return new CoordinatorConfig(apis, timeoutMills, wcl, rcl);
+    }
+
+    /*@Bean
+    PartitionConfig partitionConfig(KeyValueApi localApi, CoordinatorConfig config) {
         final List<String> nodesPaths = KvEnv.get(KvEnv.HOSTS)
                 .map(h -> Arrays.stream(h.split(",")))
                 .orElse(Stream.empty())
                 .collect(Collectors.toList());
 
-        final int wcl = KvEnv.get(KvEnv.WCL).map(Integer::parseInt).orElse(nodesPaths.size());
-        final int rcl = KvEnv.get(KvEnv.RCL).map(Integer::parseInt).orElse(nodesPaths.size());
         final int timeoutMills = KvEnv.get(KvEnv.TIMEOUT_MILLS)
                 .map(Integer::parseInt).orElse(10000);
 
@@ -62,6 +92,6 @@ public class Application {
             apis.add(localApi);
         }
 
-        return new CoordinatorConfig(apis, timeoutMills, wcl, rcl);
-    }
+        return new PartitionConfig(apis, timeoutMills);
+    }*/
 }

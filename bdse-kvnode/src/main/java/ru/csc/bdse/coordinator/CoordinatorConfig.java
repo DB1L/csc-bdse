@@ -3,14 +3,15 @@ package ru.csc.bdse.coordinator;
 import ru.csc.bdse.kv.KeyValueApi;
 
 import java.util.List;
+import java.util.Map;
 
 public class CoordinatorConfig {
-    private final List<KeyValueApi> apis;
+    private final Map<String, KeyValueApi> apis;
     private final long timeoutMills;
     private final int writeConsistencyLevel;
     private final int readConsistencyLevel;
 
-    public CoordinatorConfig(List<KeyValueApi> apis,
+    public CoordinatorConfig(Map<String, KeyValueApi> apis,
                              long timeoutMills,
                              int writeConsistencyLevel,
                              int readConsistencyLevel) {
@@ -20,7 +21,7 @@ public class CoordinatorConfig {
         this.readConsistencyLevel = readConsistencyLevel;
     }
 
-    public List<KeyValueApi> apis() {
+    public Map<String, KeyValueApi> apis() {
         return apis;
     }
 

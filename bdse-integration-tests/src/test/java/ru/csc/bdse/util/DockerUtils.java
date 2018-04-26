@@ -28,7 +28,7 @@ public class DockerUtils {
     }
 
     public static GenericContainer nodeInMemory(Network network, String nodeAlias) {
-        return nodeInMemory(network, nodeAlias, Collections.singletonList("https://" + nodeAlias + ":8080"), 10000, 1, 1);
+        return nodeInMemory(network, nodeAlias, Collections.singletonList(nodeAlias), 10000, 1, 1);
     }
 
     public static GenericContainer nodeInMemory(Network network,

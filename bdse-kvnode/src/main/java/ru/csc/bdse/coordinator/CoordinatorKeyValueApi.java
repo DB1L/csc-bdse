@@ -25,7 +25,7 @@ public class CoordinatorKeyValueApi implements KeyValueApi {
     private final int writeConsistencyLevel;
     private final int readConsistencyLevel;
 
-    CoordinatorKeyValueApi(List<KeyValueApi> nodes,
+    CoordinatorKeyValueApi(Collection<KeyValueApi> nodes,
                            long timeoutMills,
                            int writeConsistencyLevel,
                            int readConsistencyLevel) {

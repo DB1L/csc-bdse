@@ -42,7 +42,7 @@ public abstract class QuorumTest extends AbstractKeyValueApiTest {
         final Network network = Network.newNetwork();
         final GenericContainer[] clulster = new GenericContainer[size];
         final List<String> nodes = IntStream.range(0, size)
-                .mapToObj(id -> "http://node" + id + ":8080")
+                .mapToObj(id -> "node" + id)
                 .collect(Collectors.toList());
         for (int i = 0; i < size; i++) {
             clulster[i] = DockerUtils.nodeInMemory(network, "node" + i, nodes, 1000, wcl, rcl);
