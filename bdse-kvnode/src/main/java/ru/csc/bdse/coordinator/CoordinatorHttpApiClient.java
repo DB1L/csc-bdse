@@ -12,13 +12,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CoordinatorHttpApiClient implements KeyValueApi {
-    public static final int ATTEMPTS = 10;
+    private static final int ATTEMPTS = 10;
     private final List<KeyValueApi> apis;
     private int currentCoordinator = 0;
 
-    public CoordinatorHttpApiClient(List<String> coordinators) {
+    public CoordinatorHttpApiClient(List<String> coordinators, String controller) {
         apis = coordinators.stream()
-                .map(c -> new KeyValueApiHttpClient(c + "/coordinator"))
+                .map(c -> new KeyValueApiHttpClient(c + "/" + controller))
                 .collect(Collectors.toList());
     }
 
@@ -66,9 +66,11 @@ public class CoordinatorHttpApiClient implements KeyValueApi {
 
         for (int attempt = 0; attempt < ATTEMPTS; currentCoordinator = (currentCoordinator + 1) % apis.size(), ++attempt) {
             try {
+                System.out.println("ATTEMPT " + attempt);
                 return action.apply(apis.get(currentCoordinator));
             } catch (RuntimeException e) {
                 lastException = e;
+                System.out.println("EXCEPTION: " + e);
             }
         }
         throw lastException;

@@ -31,22 +31,22 @@ public class DockerUtils {
         return nodeInMemory(network, nodeAlias, Collections.singletonList(nodeAlias), 10000, 1, 1);
     }
 
-    public static GenericContainer nodeInMemory(Network network,
-                                                String nodeAlias,
-                                                List<String> otherNodes,
-                                                long timeoutMills,
-                                                int wcl,
-                                                int rcl) {
+    private static GenericContainer nodeInMemory(Network network,
+                                                 String nodeAlias,
+                                                 List<String> otherNodes,
+                                                 long timeoutMills,
+                                                 int wcl,
+                                                 int rcl) {
         return nodeInMemory(network, nodeAlias, otherNodes, timeoutMills, wcl, rcl, KvEnv.Partitioners.CONSISTENT);
     }
 
     public static GenericContainer nodeInMemory(Network network,
-                                                String nodeAlias,
-                                                List<String> otherNodes,
-                                                long timeoutMills,
-                                                int wcl,
-                                                int rcl,
-                                                KvEnv.Partitioners partitioner) {
+                                                 String nodeAlias,
+                                                 List<String> otherNodes,
+                                                 long timeoutMills,
+                                                 int wcl,
+                                                 int rcl,
+                                                 KvEnv.Partitioners partitioner) {
         return new GenericContainer(
                 new ImageFromDockerfile()
                         .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File

@@ -7,6 +7,7 @@ import ru.csc.bdse.kv.NodeInfo;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -22,7 +23,7 @@ public class PartitionedKeyValueApi implements KeyValueApi {
         this.timeoutInMillis = timeoutInMillis;
         this.partitioner = partitioner;
         this.executors = partitions.entrySet().stream()
-                .collect(toMap(Map.Entry::getKey, e -> Executors.newSingleThreadExecutor()));
+                .collect(toMap(Map.Entry::getKey, e -> new ForkJoinPool()));
     }
 
 
@@ -55,6 +56,7 @@ public class PartitionedKeyValueApi implements KeyValueApi {
     @Override
     public Set<NodeInfo> getInfo() {
         return execute(KeyValueApi::getInfo);
+        //return partitions.values().stream().flatMap(n -> n.getInfo().stream()).collect(Collectors.toSet());
     }
 
     @Override
@@ -80,17 +82,21 @@ public class PartitionedKeyValueApi implements KeyValueApi {
         final Set<R> result = new ConcurrentSkipListSet<>();
         final List<Future> futures = new ArrayList<>();
         executors.forEach((s, executorService) -> futures.add(executorService.submit(() -> {
-            result.addAll(function.apply(partitions.get(s)));
+            final Set<R> apply = function.apply(partitions.get(s));
+            System.out.println("RES: " + apply);
+            result.addAll(apply);
             latch.countDown();
+            System.out.println("COUNT: " + latch.getCount());
         })));
 
         try {
-            latch.await(timeoutInMillis, TimeUnit.MILLISECONDS);
+            latch.await(5000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
             futures.forEach(future -> future.cancel(true));
         }
+        System.out.println("LATCH: " + latch.getCount() + "/" + partitions.size());
         return result;
     }
 }
