@@ -7,9 +7,9 @@ import ru.csc.bdse.controller.KeyValueApiController;
 @RestController
 @RequestMapping("coordinator")
 public class CoordinatorController extends KeyValueApiController {
-    public CoordinatorController(CoordinatorConfig config) {
+    public CoordinatorController(Config config) {
         super(new CoordinatorKeyValueApi(
-                config.apis(),
+                config.apis().values(),
                 config.timeoutMills(),
                 config.writeConsistencyLevel(),
                 config.readConsistencyLevel()

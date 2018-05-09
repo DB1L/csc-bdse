@@ -1,26 +1,34 @@
 package ru.csc.bdse.coordinator;
 
 import ru.csc.bdse.kv.KeyValueApi;
+import ru.csc.bdse.partitioning.Partitioner;
 
-import java.util.List;
+import java.util.Map;
 
-public class CoordinatorConfig {
-    private final List<KeyValueApi> apis;
+public class Config {
+    private final Map<String, KeyValueApi> apis;
     private final long timeoutMills;
     private final int writeConsistencyLevel;
     private final int readConsistencyLevel;
+    private final Partitioner partitioner;
 
-    public CoordinatorConfig(List<KeyValueApi> apis,
-                             long timeoutMills,
-                             int writeConsistencyLevel,
-                             int readConsistencyLevel) {
+    public Config(Map<String, KeyValueApi> apis,
+                  long timeoutMills,
+                  int writeConsistencyLevel,
+                  int readConsistencyLevel,
+                  Partitioner partitioner) {
         this.apis = apis;
         this.timeoutMills = timeoutMills;
         this.writeConsistencyLevel = writeConsistencyLevel;
         this.readConsistencyLevel = readConsistencyLevel;
+        this.partitioner = partitioner;
     }
 
-    public List<KeyValueApi> apis() {
+    public Partitioner partitioner() {
+        return partitioner;
+    }
+
+    public Map<String, KeyValueApi> apis() {
         return apis;
     }
 

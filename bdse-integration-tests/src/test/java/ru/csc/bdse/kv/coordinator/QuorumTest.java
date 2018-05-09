@@ -13,10 +13,8 @@ import ru.csc.bdse.kv.NodeAction;
 import ru.csc.bdse.kv.NodeInfo;
 import ru.csc.bdse.util.DockerUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -41,9 +39,9 @@ public abstract class QuorumTest extends AbstractKeyValueApiTest {
     protected static GenericContainer[] cluster(int size, int wcl, int rcl) {
         final Network network = Network.newNetwork();
         final GenericContainer[] clulster = new GenericContainer[size];
-        final List<String> nodes = IntStream.range(0, size)
-                .mapToObj(id -> "http://node" + id + ":8080")
-                .collect(Collectors.toList());
+        final Map<String, String> nodes = IntStream.range(0, size)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.toMap(Function.identity(), id -> "http://node" + id + ":8080"));
         for (int i = 0; i < size; i++) {
             clulster[i] = DockerUtils.nodeInMemory(network, "node" + i, nodes, 1000, wcl, rcl);
             clulster[i].start();

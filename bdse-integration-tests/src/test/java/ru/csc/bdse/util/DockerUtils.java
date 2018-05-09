@@ -10,7 +10,7 @@ import ru.csc.bdse.kv.RedisKeyValueApiTest;
 import java.io.File;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -28,15 +28,17 @@ public class DockerUtils {
     }
 
     public static GenericContainer nodeInMemory(Network network, String nodeAlias) {
-        return nodeInMemory(network, nodeAlias, Collections.singletonList("https://" + nodeAlias + ":8080"), 10000, 1, 1);
+        return nodeInMemory(network, nodeAlias, Collections.singletonMap(nodeAlias, "https://" + nodeAlias + ":8080"), 10000, 1, 1);
     }
 
     public static GenericContainer nodeInMemory(Network network,
                                                 String nodeAlias,
-                                                List<String> otherNodes,
+                                                Map<String, String> nodePaths,
                                                 long timeoutMills,
                                                 int wcl,
                                                 int rcl) {
+        final String hosts = nodePaths.entrySet().stream().map(s -> s.getKey() + '@' + s.getValue()).collect(Collectors.joining(","));
+
         return new GenericContainer(
                 new ImageFromDockerfile()
                         .withFileFromFile("target/bdse-kvnode-0.0.1-SNAPSHOT.jar", new File
@@ -44,7 +46,7 @@ public class DockerUtils {
                         .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
                 .withEnv(KvEnv.KVNODE_NAME, nodeAlias)
                 .withEnv(KvEnv.IN_MEMORY, "true")
-                .withEnv(KvEnv.HOSTS, otherNodes.stream().collect(Collectors.joining(",")))
+                .withEnv(KvEnv.HOSTS, hosts)
                 .withEnv(KvEnv.RCL, Integer.toString(rcl))
                 .withEnv(KvEnv.WCL, Integer.toString(wcl))
                 .withEnv(KvEnv.TIMEOUT_MILLS, Long.toString(timeoutMills))
@@ -64,6 +66,7 @@ public class DockerUtils {
                         .withFileFromClasspath("Dockerfile", "kvnode/Dockerfile"))
                 .withEnv(KvEnv.KVNODE_NAME, nodeAlias)
                 .withEnv(KvEnv.REDIS_HOSTNAME, redisHostName)
+                .withEnv(KvEnv.HOSTS, nodeAlias + '@' + "https://" + nodeAlias + "8080")
                 .withEnv(KvEnv.REDIS_PORT, String.valueOf(RedisKeyValueApiTest.REDIS_PORT))
                 .withExposedPorts(8080)
                 .withNetwork(network)
